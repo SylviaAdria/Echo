@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Unknown</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        /* ==================== 全局样式 ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Courier New', 'Microsoft YaHei', monospace;
+            overflow: hidden;
+        }
+
+        /* ==================== 背景浮动粒子 ==================== */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            color: #1a3a2a;
+            font-size: 14px;
+            animation: floatUp linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.2;
+            }
+            100% {
+                transform: translateY(-10vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* ==================== 扫描线效果 ==================== */
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 0, 0, 0.03) 2px,
+                rgba(0, 0, 0, 0.03) 4px
+            );
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ==================== 主体容器 ==================== */
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 600px;
+            padding: 50px 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ==================== 标题 ==================== */
+        .title {
+            font-family: 'Press Start 2P', 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: 900;
+            color: #1a4a2a;
+            letter-spacing: 4px;
+            margin-bottom: 60px;
+            text-shadow:
+                0 0 20px rgba(26, 74, 42, 0.3),
+                2px 2px 0 #000,
+                -1px -1px 0 #000,
+                1px -1px 0 #000,
+                -1px 1px 0 #000;
+            animation: titleGlow 3s ease-in-out infinite;
+            text-align: center;
+            line-height: 1.6;
+            image-rendering: pixelated;
+            -webkit-font-smoothing: none;
+        }
+
+        @keyframes titleGlow {
+            0%,
+            100% {
+                text-shadow:
+                    0 0 20px rgba(26, 74, 42, 0.3),
+                    2px 2px 0 #000,
+                    -1px -1px 0 #000,
+                    1px -1px 0 #000,
+                    -1px 1px 0 #000;
+            }
+            50% {
+                text-shadow:
+                    0 0 40px rgba(26, 74, 42, 0.6),
+                    0 0 80px rgba(26, 74, 42, 0.2),
+                    2px 2px 0 #000,
+                    -1px -1px 0 #000,
+                    1px -1px 0 #000,
+                    -1px 1px 0 #000;
+            }
+        }
+
+        /* ==================== 输入框容器 ==================== */
+        .input-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* ==================== 输入框 ==================== */
+        .mystic-input {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #1a3a2a;
+            border-radius: 4px;
+            color: #2d7a3a;
+            font-size: 16px;
+            font-family: 'Courier New', 'Microsoft YaHei', monospace;
+            letter-spacing: 3px;
+            outline: none;
+            caret-color: transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .mystic-input:focus {
+            border-color: #2d7a3a;
+            box-shadow:
+                0 0 25px rgba(45, 122, 58, 0.2),
+                inset 0 0 25px rgba(45, 122, 58, 0.05);
+        }
+
+        .mystic-input::placeholder {
+            color: #0d2a15;
+            letter-spacing: 2px;
+        }
+
+        .mystic-input:focus::placeholder {
+            animation: cursorBlink 1.2s step-end infinite;
+        }
+
+        @keyframes cursorBlink {
+            0%,
+            100% {
+                opacity: 0.3;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* ==================== 自定义光标 ==================== */
+        .custom-caret {
+            position: absolute;
+            width: 2px;
+            height: 18px;
+            background: #2d7a3a;
+            pointer-events: none;
+            z-index: 3;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .custom-caret.active {
+            opacity: 1;
+            animation: caretBlink 0.8s step-end infinite;
+        }
+
+        @keyframes caretBlink {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* ==================== 光标拖尾粒子 ==================== */
+        .caret-trail {
+            position: absolute;
+            pointer-events: none;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .trail-particle {
+            position: absolute;
+            color: #1a4a2a;
+            font-size: 10px;
+            opacity: 0;
+            animation: trailFade 0.6s ease-out forwards;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        @keyframes trailFade {
+            0% {
+                opacity: 0.8;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-12px) scale(0.3);
+            }
+        }
+
+        /* ==================== 占位光标提示 ==================== */
+        .cursor-hint {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #0d2a15;
+            font-size: 14px;
+            pointer-events: none;
+            z-index: 4;
+            animation: hintPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes hintPulse {
+            0%,
+            100% {
+                opacity: 0.3;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .mystic-input:focus ~ .cursor-hint,
+        .mystic-input:not(:placeholder-shown) ~ .cursor-hint {
+            opacity: 0;
+            animation: none;
+        }
+
+        /* ==================== 输出结果区域 ==================== */
+        .response-area {
+            margin-top: 40px;
+            min-height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            flex-direction: column;
+        }
+
+        /* ==================== 打字机输出文字 ==================== */
+        .typewriter-output {
+            font-family: 'Courier New', 'Microsoft YaHei', monospace;
+            font-size: 20px;
+            color: #2d7a3a;
+            letter-spacing: 4px;
+            text-align: center;
+            line-height: 1.6;
+            position: relative;
+            z-index: 2;
+            min-height: 30px;
+            text-shadow: 0 0 8px rgba(45, 122, 58, 0.3);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .typewriter-output.visible {
+            opacity: 1;
+        }
+
+        .typewriter-output.heart {
+            font-size: 40px;
+            letter-spacing: 0;
+        }
+
+        .typewriter-output.null-response {
+            color: #4a1a1a;
+            text-shadow: 0 0 8px rgba(122, 45, 45, 0.3);
+        }
+
+        .typewriter-output .output-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 18px;
+            background: #2d7a3a;
+            margin-left: 2px;
+            animation: caretBlink 0.8s step-end infinite;
+            vertical-align: middle;
+        }
+
+        .typewriter-output.null-response .output-cursor {
+            background: #4a1a1a;
+        }
+
+        .typewriter-output.heart .output-cursor {
+            height: 30px;
+        }
+
+        /* ==================== 输出粒子效果 ==================== */
+        .response-particles {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 1;
+            width: 300px;
+            height: 60px;
+        }
+
+        .response-particle {
+            position: absolute;
+            color: #1a4a2a;
+            font-size: 11px;
+            opacity: 0;
+            animation: codeScatter 2s ease-out forwards;
+            white-space: nowrap;
+        }
+
+        .response-particle.null-particle {
+            color: #3a1a1a;
+        }
+
+        @keyframes codeScatter {
+            0% {
+                opacity: 0;
+                transform: translate(0, 0) scale(0.5);
+            }
+            15% {
+                opacity: 0.7;
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--dx), var(--dy)) scale(1.2);
+            }
+        }
+
+        /* ==================== 底部装饰线 ==================== */
+        .bottom-line {
+            margin-top: 50px;
+            width: 60px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #1a3a2a, transparent);
+        }
+
+        /* ==================== 响应式 ==================== */
+        @media (max-width: 600px) {
+            .container {
+                width: 90%;
+                padding: 30px 20px;
+            }
+
+            .title {
+                font-size: 13px;
+                letter-spacing: 2px;
+            }
+
+            .mystic-input {
+                font-size: 14px;
+                padding: 14px 16px;
+            }
+
+            .typewriter-output {
+                font-size: 16px;
+            }
+
+            .typewriter-output.heart {
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 背景粒子容器 -->
+    <div class="particles" id="particles"></div>
+
+    <!-- 扫描线 -->
+    <div class="scanline"></div>
+
+    <!-- 主体 -->
+    <div class="container">
+
+        <!-- 标题 -->
+        <h1 class="title">Page Unknown</h1>
+
+        <!-- 输入框区域 -->
+        <div class="input-wrapper" id="inputWrapper">
+            <input
+                type="text"
+                class="mystic-input"
+                id="mysticInput"
+                placeholder="Waiting for you…"
+                autofocus
+                autocomplete="off"
+            >
+            <div class="caret-trail" id="caretTrail"></div>
+            <div class="custom-caret" id="customCaret"></div>
+            <span class="cursor-hint">▍</span>
+        </div>
+
+        <!-- 结果输出区域 -->
+        <div class="response-area" id="responseArea">
+            <div class="typewriter-output" id="typewriterOutput"></div>
+            <div class="response-particles" id="responseParticles"></div>
+        </div>
+
+        <!-- 底部装饰线 -->
+        <div class="bottom-line"></div>
+
+    </div>
+
+    <script>
+        (function() {
+
+            // ==================== 元素引用 ====================
+            var input = document.getElementById("mysticInput");
+            var inputWrapper = document.getElementById("inputWrapper");
+            var customCaret = document.getElementById("customCaret");
+            var caretTrail = document.getElementById("caretTrail");
+            var cursorHint = document.querySelector(".cursor-hint");
+            var typewriterOutput = document.getElementById("typewriterOutput");
+            var responseParticles = document.getElementById("responseParticles");
+
+            // ==================== 状态变量 ====================
+            var lastSubmittedValue = "";
+            var isTypingAnimation = false;
+            var typewriterTimer = null;
+            var trailSpawnTimer = null;
+            var caretPos = { x: 20, y: 16 };
+
+            // ==================== 更新自定义光标位置 ====================
+            function updateCaretPosition() {
+                var inputRect = input.getBoundingClientRect();
+                var wrapperRect = inputWrapper.getBoundingClientRect();
+                var textBefore = input.value.substring(0, input.selectionStart);
+
+                var measure = document.createElement("span");
+                measure.style.font = getComputedStyle(input).font;
+                measure.style.letterSpacing = getComputedStyle(input).letterSpacing;
+                measure.style.visibility = "hidden";
+                measure.style.position = "absolute";
+                measure.style.whiteSpace = "pre";
+                measure.textContent = textBefore;
+                document.body.appendChild(measure);
+
+                var textWidth = measure.getBoundingClientRect().width;
+                document.body.removeChild(measure);
+
+                var cx = inputRect.left - wrapperRect.left + 20 + textWidth;
+                var cy = inputRect.top - wrapperRect.top + 17;
+                caretPos = { x: cx, y: cy };
+
+                customCaret.style.left = cx + "px";
+                customCaret.style.top = cy + "px";
+            }
+
+            // ==================== 光标拖尾粒子 ====================
+            function spawnTrailParticle() {
+                if (document.activeElement !== input) return;
+                if (input.value.length === 0) return;
+
+                var chars = ["0", "1", "_", "·"];
+                var particle = document.createElement("span");
+                particle.className = "trail-particle";
+                particle.textContent = chars[Math.floor(Math.random() * chars.length)];
+                particle.style.left = caretPos.x + (Math.random() - 0.5) * 6 + "px";
+                particle.style.top = caretPos.y + "px";
+                caretTrail.appendChild(particle);
+
+                setTimeout(function() {
+                    if (particle.parentNode) particle.parentNode.removeChild(particle);
+                }, 600);
+            }
+
+            function startTrailSpawn() {
+                stopTrailSpawn();
+                trailSpawnTimer = setInterval(spawnTrailParticle, 120);
+            }
+
+            function stopTrailSpawn() {
+                if (trailSpawnTimer) {
+                    clearInterval(trailSpawnTimer);
+                    trailSpawnTimer = null;
+                }
+            }
+
+            // ==================== 输入框事件 ====================
+            input.addEventListener("focus", function() {
+                customCaret.classList.add("active");
+                updateCaretPosition();
+                startTrailSpawn();
+            });
+
+            input.addEventListener("blur", function() {
+                customCaret.classList.remove("active");
+                stopTrailSpawn();
+            });
+
+            input.addEventListener("input", function() {
+                updateCaretPosition();
+
+                if (this.value.length > 0) {
+                    cursorHint.style.opacity = "0";
+                } else {
+                    cursorHint.style.opacity = "";
+                    stopTrailSpawn();
+                }
+
+                if (lastSubmittedValue !== "" && this.value !== lastSubmittedValue) {
+                    dismissResponse();
+                }
+
+                if (this.value === "" && lastSubmittedValue !== "") {
+                    dismissResponse();
+                }
+            });
+
+            input.addEventListener("click", updateCaretPosition);
+            input.addEventListener("keyup", updateCaretPosition);
+
+            // ==================== 回车触发 ====================
+            input.addEventListener("keydown", function(e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    stopTrailSpawn();
+                    lastSubmittedValue = this.value;
+                    verifyAndRespond(this.value);
+                }
+            });
+
+            // ==================== 快速消失动画 ====================
+            function dismissResponse() {
+                if (typewriterTimer) {
+                    clearTimeout(typewriterTimer);
+                    typewriterTimer = null;
+                }
+                isTypingAnimation = false;
+
+                typewriterOutput.style.transition = "opacity 0.2s ease";
+                typewriterOutput.style.opacity = "0";
+                responseParticles.innerHTML = "";
+                lastSubmittedValue = "";
+
+                setTimeout(function() {
+                    typewriterOutput.style.transition = "opacity 0.2s ease";
+                    typewriterOutput.classList.remove("heart", "null-response");
+                    typewriterOutput.innerHTML = "";
+                    typewriterOutput.style.textShadow = "none";
+                }, 250);
+            }
+
+            // ==================== 验证输入并响应 ====================
+            function verifyAndRespond(value) {
+                if (value.trim() === "") {
+                    lastSubmittedValue = "";
+                    return;
+                }
+
+                var response = null;
+
+                if (value === "\u0062\u0037\u0063\u0035\u0063\u0065\u0062\u0037\u0065\u0066\u0064\u0061\u0062\u0037\u0063\u0035\u0063\u0065\u0062\u0037\u0064\u0038\u0065\u0038\u0062\u0037\u0063\u0033\u0063\u0061") {
+                    response = "\u0030\u0078\u0035\u0039";
+                } else if (value === "\u67ef\u67ef") {
+                    response = "\u6211\u4e00\u76f4\u90fd\u5728";
+                } else if (value === "\u59d0\u59d0") {
+                    response = "\u6211\u5728";
+                } else if (value === "\u59d0\u59d0\u5927\u4eba") {
+                    response = "\u6211\u5728";
+                }
+
+                if (response !== null) {
+                    typewriteOutput(response, false);
+                } else {
+                    typewriteOutput("NULL", true);
+                }
+            }
+
+            // ==================== 打字机逐字输出 ====================
+            function typewriteOutput(text, isNull) {
+                if (typewriterTimer) {
+                    clearTimeout(typewriterTimer);
+                    typewriterTimer = null;
+                }
+                isTypingAnimation = false;
+
+                responseParticles.innerHTML = "";
+
+                typewriterOutput.style.transition = "opacity 0.15s ease";
+                typewriterOutput.style.opacity = "0";
+                typewriterOutput.classList.remove("heart", "null-response");
+                typewriterOutput.innerHTML = "";
+                typewriterOutput.style.textShadow = "none";
+
+                if (isNull) {
+                    typewriterOutput.classList.add("null-response");
+                    typewriterOutput.style.textShadow = "0 0 8px rgba(122,45,45,0.3)";
+                } else {
+                    typewriterOutput.style.textShadow = "0 0 8px rgba(45,122,58,0.3)";
+                }
+
+                if (text === "\ud83e\udd0d") {
+                    typewriterOutput.classList.add("heart");
+                }
+
+                typewriterOutput.style.opacity = "1";
+
+                var chars = text.split('');
+                var index = 0;
+                isTypingAnimation = true;
+
+                var cursorSpan = document.createElement("span");
+                cursorSpan.className = "output-cursor";
+                if (isNull) cursorSpan.style.background = "#4a1a1a";
+
+                function typeNextChar() {
+                    if (!isTypingAnimation) return;
+
+                    if (index < chars.length) {
+                        var oldCursor = typewriterOutput.querySelector(".output-cursor");
+                        if (oldCursor) oldCursor.remove();
+
+                        typewriterOutput.appendChild(document.createTextNode(chars[index]));
+                        typewriterOutput.appendChild(cursorSpan.cloneNode(true));
+
+                        index++;
+                        typewriterTimer = setTimeout(typeNextChar, 100 + Math.random() * 80);
+                    } else {
+                        typewriterTimer = setTimeout(function() {
+                            var finalCursor = typewriterOutput.querySelector(".output-cursor");
+                            if (finalCursor) finalCursor.remove();
+                            typewriterTimer = null;
+                            isTypingAnimation = false;
+                            spawnResponseParticles(isNull);
+                        }, 1000);
+                    }
+                }
+
+                typeNextChar();
+            }
+
+            // ==================== 输出粒子效果 ====================
+            function spawnResponseParticles(isNull) {
+                responseParticles.innerHTML = "";
+                var chars = ["0", "1", "{", "}", "[", "]", ";", "/", "*", ">", "<", "|", "&", "$", "#"];
+
+                for (var i = 0; i < 14; i++) {
+                    var particle = document.createElement("span");
+                    particle.className = "response-particle";
+                    if (isNull) particle.classList.add("null-particle");
+
+                    particle.textContent = chars[Math.floor(Math.random() * chars.length)];
+
+                    var angle = Math.random() * Math.PI * 2;
+                    var distance = 40 + Math.random() * 80;
+                    particle.style.setProperty("--dx", Math.cos(angle) * distance + "px");
+                    particle.style.setProperty("--dy", Math.sin(angle) * distance + "px");
+                    particle.style.left = "50%";
+                    particle.style.top = "50%";
+                    particle.style.animationDelay = Math.random() * 0.8 + "s";
+                    particle.style.animationDuration = (1.2 + Math.random() * 1.8) + "s";
+
+                    responseParticles.appendChild(particle);
+                }
+
+                setTimeout(function() {
+                    responseParticles.innerHTML = "";
+                }, 3000);
+            }
+
+            // ==================== 生成背景粒子 ====================
+            function createBackgroundParticles() {
+                var container = document.getElementById("particles");
+                var chars = ["0", "1", "★", "·", "◆", "◇", "○", "●", "▍", "░", "▒", "▓"];
+
+                for (var i = 0; i < 30; i++) {
+                    var particle = document.createElement("span");
+                    particle.className = "particle";
+                    particle.textContent = chars[Math.floor(Math.random() * chars.length)];
+                    particle.style.left = Math.random() * 100 + "%";
+                    particle.style.animationDuration = (Math.random() * 15 + 10) + "s";
+                    particle.style.animationDelay = Math.random() * 15 + "s";
+                    particle.style.fontSize = (Math.random() * 10 + 8) + "px";
+                    container.appendChild(particle);
+                }
+            }
+
+            createBackgroundParticles();
+
+            // ==================== 初始化光标 ====================
+            updateCaretPosition();
+            customCaret.classList.add("active");
+            startTrailSpawn();
+
+        })();
+    </script>
+</body>
+</html>
