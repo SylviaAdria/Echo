@@ -461,6 +461,7 @@
             var typewriterTimer = null;
             var trailSpawnTimer = null;
             var caretPos = { x: 20, y: 16 };
+            var shakeTimer = null;
 
             // ==================== 更新自定义光标位置 ====================
             function updateCaretPosition() {
@@ -600,6 +601,10 @@
                     response = "\u6211\u5728";
                 } else if (value === "\u59d0\u59d0\u5927\u4eba") {
                     response = "\u6211\u5728";
+                } else if (value === "\u4f60\u4e3a\u4ec0\u4e48\u662f\u0030\u0035\u5e74\u7684") {
+                    response = "\u662f\u554a\uff0c\u4e3a\u4ec0\u4e48";
+                } else if (value === "\u4eca\u5929\u5403\u4ec0\u4e48") {
+                    response = "\u662f\u554a\uff0c\u5403\u4ec0\u4e48";
                 }
 
                 if (response !== null) {
@@ -699,6 +704,58 @@
                 setTimeout(function() {
                     responseParticles.innerHTML = "";
                 }, 3000);
+            }
+
+            // ==================== 摇晃检测 ====================
+            (function() {
+                if (window.DeviceMotionEvent) {
+                    var lastShakeTime = 0;
+                    var shakeThreshold = 20;
+
+                    window.addEventListener("devicemotion", function(e) {
+                        var acc = e.accelerationIncludingGravity;
+                        if (!acc) return;
+
+                        var x = acc.x || 0;
+                        var y = acc.y || 0;
+                        var z = acc.z || 0;
+
+                        var magnitude = Math.sqrt(x * x + y * y + z * z);
+
+                        if (magnitude > shakeThreshold) {
+                            var now = Date.now();
+                            if (now - lastShakeTime > 1500) {
+                                lastShakeTime = now;
+                                triggerShakeResponse();
+                            }
+                        }
+                    });
+                }
+            })();
+
+            function triggerShakeResponse() {
+                if (shakeTimer) {
+                    clearTimeout(shakeTimer);
+                }
+                if (typewriterTimer) {
+                    clearTimeout(typewriterTimer);
+                    typewriterTimer = null;
+                }
+                isTypingAnimation = false;
+
+                responseParticles.innerHTML = "";
+                typewriterOutput.style.transition = "opacity 0.1s ease";
+                typewriterOutput.classList.remove("heart", "null-response");
+                typewriterOutput.innerHTML = "";
+                typewriterOutput.style.textShadow = "0 0 8px rgba(45,122,58,0.3)";
+                typewriterOutput.textContent = "\u597d\u6655";
+                typewriterOutput.style.opacity = "1";
+
+                shakeTimer = setTimeout(function() {
+                    typewriterOutput.style.transition = "opacity 0.5s ease";
+                    typewriterOutput.style.opacity = "0";
+                    shakeTimer = null;
+                }, 1000);
             }
 
             // ==================== 生成背景粒子 ====================
